@@ -1,0 +1,17 @@
+{
+  "name": "germanarticles",
+  "displayName": "germanarticles",
+  "expo": {
+    "name": "germanarticles",
+    "slug": "germanarticles",
+    "version": "1.0.0",
+    "platforms": [
+      "ios",
+      "android",
+      "web"
+    ],
+    "assetBundlePatterns": [
+      "**/*"
+    ]
+  }
+}
