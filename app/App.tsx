@@ -6,6 +6,8 @@ import {
   TouchableWithoutFeedback,
   StyleSheet,
 } from "react-native";
+import * as ImageManipulator from "expo-image-manipulator";
+
 import { Camera } from "expo-camera";
 
 import ProgressIndicator from "./components/ProgressIndicator";
@@ -21,6 +23,8 @@ const styles = StyleSheet.create({
   },
   resultImg: {
     position: "absolute",
+    textAlign: "center",
+    fontSize: 50,
     zIndex: 300,
     top: "25%",
     left: 0,
@@ -60,8 +64,43 @@ export default function App() {
 
   async function onPressIn() {
     setPressed(true);
-
+    const resp = await cut();
+    setPressed(false);
+    console.log('response', resp);
+    setState({ ...state, currImgSrc: resp });
     console.log('press in');
+  }
+
+  async function cut(): Promise<string> {
+    const start = Date.now();
+    console.log("");
+    console.log("Cut");
+
+    console.log(camera.pictureSize);
+    // const ratios = await camera.getSupportedRatiosAsync()
+    // console.log(ratios)
+    // const sizes = await camera.getAvailablePictureSizeAsync("2:1")
+    // console.log(sizes)
+
+    console.log("> taking image...");
+    const opts = { skipProcessing: true, exif: false, quality: 0 };
+    // const opts = {};
+    let photo = await camera.takePictureAsync(opts);
+
+    console.log("> resizing...");
+    const { uri } = await ImageManipulator.manipulateAsync(
+      photo.uri,
+      [
+        { resize: { width: 256, height: 512 } },
+        { crop: { originX: 0, originY: 128, width: 256, height: 256 } },
+      ]
+    );
+
+    console.log("> sending to /cut...");
+    //const resp = await server.cut(uri);
+
+    console.log(`Done in ${((Date.now() - start) / 1000).toFixed(3)}s`);
+    return 'HOLA';
   }
 
   async function onPressOut() {
@@ -94,7 +133,7 @@ export default function App() {
         ratio="2:1"
         ref={async (ref) => (camera = ref)}
       >
-        <TouchableWithoutFeedback onPressIn={onPressIn} onPressOut={onPressOut}>
+        <TouchableWithoutFeedback onPressIn={onPressIn}>
           <View
             style={{
               flex: 1,
@@ -104,16 +143,12 @@ export default function App() {
           ></View>
         </TouchableWithoutFeedback>
       </Camera>
-
+      <>
+        <Text>{state.currImgSrc}</Text>
+      </>
       {pressed && state.currImgSrc !== "" ? (
         <>
-          <View pointerEvents="none" style={styles.resultImgView}>
-            <Image
-              style={styles.resultImg}
-              source={{ uri: state.currImgSrc }}
-              resizeMode="stretch"
-            />
-          </View>
+          <Text style={styles.resultImg}>{state.currImgSrc}</Text>
         </>
       ) : null}
 
