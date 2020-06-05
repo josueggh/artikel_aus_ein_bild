@@ -1,0 +1,16 @@
+{
+  "name": "artikel_au_ein_bild",
+  "version": "1.0.0",
+  "main": "app.js",
+  "license": "MIT",
+  "scripts": {
+    "start": "node app.js"
+  },
+  "dependencies": {
+    "@google-cloud/translate": "^6.0.0",
+    "@google-cloud/vision": "^1.11.0",
+    "cors": "^2.8.5",
+    "express": "^4.17.1",
+    "express-formidable": "^1.2.0"
+  }
+}
