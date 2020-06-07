@@ -2,42 +2,52 @@ import React, { useState, useEffect } from "react";
 import {
   Text,
   View,
-  Image,
   TouchableWithoutFeedback,
   StyleSheet,
 } from "react-native";
-import * as ImageManipulator from "expo-image-manipulator";
 
 import { Camera } from "expo-camera";
 
 import ProgressIndicator from "./components/ProgressIndicator";
+import server from "./components/Server";
 
 const styles = StyleSheet.create({
-  resultImgView: {
-    position: "absolute",
-    zIndex: 200,
-    top: 0,
-    left: 0,
-    width: "100%",
-    height: "100%",
-  },
-  resultImg: {
+  resultTranslation: {
+    color: '#FFFFFF',
     position: "absolute",
     textAlign: "center",
     fontSize: 50,
     zIndex: 300,
-    top: "25%",
+    top: "35%",
     left: 0,
     width: "100%",
     height: "50%",
   },
 });
 
+const articleColors = {
+  der : {
+    color: '#00aade'
+  },
+  die : {
+    color: '#d20829'
+  },
+  das : {
+    color : '#04b81a'
+  }
+};
+
 interface State {
   hasPermission: boolean;
   type: any;
   camera: any;
-  currImgSrc: string | null;
+  article: string | null;
+  substantive: string | null;
+}
+
+interface  responseServer {
+  article : string,
+  substantive : string
 }
 
 export default function App() {
@@ -45,11 +55,11 @@ export default function App() {
     hasPermission: false,
     type: Camera.Constants.Type.back,
     camera: null,
-    currImgSrc: "",
+    substantive: "",
+    article: "",
   } as State);
 
   const [pressed, setPressed] = useState(false);
-  const [pasting, setPasting] = useState(false);
 
   let camera: any = null;
 
@@ -64,50 +74,19 @@ export default function App() {
 
   async function onPressIn() {
     setPressed(true);
-    const resp = await cut();
-    setPressed(false);
-    console.log('response', resp);
-    setState({ ...state, currImgSrc: resp });
-    console.log('press in');
+    const resp = await translate();
+    setState({ ...state, article: resp.article, substantive:  resp.substantive });
   }
 
-  async function cut(): Promise<string> {
-    const start = Date.now();
-    console.log("");
-    console.log("Cut");
+  function reset(){
+    setPressed(false);
+    setState({...state, article : ""});
+  }
 
-    console.log(camera.pictureSize);
-    // const ratios = await camera.getSupportedRatiosAsync()
-    // console.log(ratios)
-    // const sizes = await camera.getAvailablePictureSizeAsync("2:1")
-    // console.log(sizes)
-
-    console.log("> taking image...");
+  async function translate(): Promise<responseServer> {
     const opts = { skipProcessing: true, exif: false, quality: 0 };
-    // const opts = {};
     let photo = await camera.takePictureAsync(opts);
-
-    console.log("> resizing...");
-    const { uri } = await ImageManipulator.manipulateAsync(
-      photo.uri,
-      [
-        { resize: { width: 256, height: 512 } },
-        { crop: { originX: 0, originY: 128, width: 256, height: 256 } },
-      ]
-    );
-
-    console.log("> sending to /cut...");
-    //const resp = await server.cut(uri);
-
-    console.log(`Done in ${((Date.now() - start) / 1000).toFixed(3)}s`);
-    return 'HOLA';
-  }
-
-  async function onPressOut() {
-    setPressed(false);
-    setPasting(true);
-
-    console.log('press out');
+    return await server.translate(photo.uri);
   }
 
   if (state.hasPermission === null) {
@@ -118,7 +97,7 @@ export default function App() {
   }
 
   let camOpacity = 1;
-  if (pressed && state.currImgSrc !== "") {
+  if (pressed && state.article !== "") {
     camOpacity = 0.8;
   }
 
@@ -143,16 +122,16 @@ export default function App() {
           ></View>
         </TouchableWithoutFeedback>
       </Camera>
-      <>
-        <Text>{state.currImgSrc}</Text>
-      </>
-      {pressed && state.currImgSrc !== "" ? (
+      {pressed && state.article !== "" ? (
         <>
-          <Text style={styles.resultImg}>{state.currImgSrc}</Text>
+          <TouchableWithoutFeedback  onPressIn={reset}>
+            <Text style={styles.resultTranslation}>
+              <Text style={{backgroundColor: articleColors[state.article].color }}>{state.article}</Text> {state.substantive}
+            </Text>
+          </TouchableWithoutFeedback>
         </>
       ) : null}
-
-      {(pressed && state.currImgSrc === "") || pasting ? <ProgressIndicator /> : null}
+      {(pressed && state.article === "") ? <ProgressIndicator /> : null}
     </View>
   );
 }

@@ -7,7 +7,7 @@ const vision = require('@google-cloud/vision');
 const {TranslationServiceClient} = require('@google-cloud/translate');
 
 const PORT = process.env.PORT || 8080;
-const PROJECT_ID = process.env.projectID || 'demo';
+const PROJECT_ID = process.env.projectID || 'YOUR_GCP_ID';
 
 const app = express();
 app.use(formidable());
