@@ -1,5 +1,5 @@
-const express 		= require("express");
-const formidable 	= require('express-formidable');
+const express 	 = require("express");
+const formidable = require('express-formidable');
 const cors = require('cors')
 
 /*Cloud Vision API && Cloud Translation API*/
@@ -34,7 +34,6 @@ const translateFromImage = async (image , source = 'en', target = 'de')=>{
 
 app.post('/translate', async (req,res)=>{
 	const obj =await translateFromImage(req.files.data.path);
-	console.log(obj);
 	return res.status(200).json(obj);
 })
 
